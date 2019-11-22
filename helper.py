@@ -12,8 +12,8 @@ def rename_elements(df, df_id):
 
     Parameters
     -----------
-    df = DataFrame used for training
-    df_id = DataFrame for ID purposes
+    df: DataFrame used for training
+    df_id: DataFrame for ID purposes
 
     Returns
     --------
