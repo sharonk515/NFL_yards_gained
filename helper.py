@@ -169,6 +169,27 @@ def rename_elements(df, df_id):
     return df
 
 
+def group_weather(txt):
+    if 'Clear' in txt:
+        if 'sunny' in txt:
+            return 'Sunny'
+        if 'cold' in txt:
+            return 'Cold'
+        return 'Clear'
+    if ('clouds' in txt) | ('Cloudy' in txt):
+        if 'rain' in txt:
+            return 'Rain'
+        if 'snow' in txt:
+            return 'Snow'
+        return 'Cloudy'
+    if 'Sunny' in txt:
+        if 'cold' in txt:
+            return 'Cold'
+        return 'Sunny'
+    if ('Rain' in txt) | ('Showers' in txt) | ('shower' in txt):
+        return 'Rain'
+    return txt
+
 def replace_null_cols(df):
     '''
     This function finds null columns and replaces them with appropriate values.
@@ -292,8 +313,6 @@ def clean_WindDirection(txt):
     -------
     text in string format
     '''
-    if pd.isna(txt):
-        return np.nan
     txt = txt.lower()
     txt = ''.join([c for c in txt if c not in punctuation])
     txt = txt.replace('from', '')
@@ -302,10 +321,18 @@ def clean_WindDirection(txt):
     txt = txt.replace('south', 's')
     txt = txt.replace('west', 'w')
     txt = txt.replace('east', 'e')
-    txt = txt.replace('13', 'wnw')
-    txt = txt.replace('1', 'nne')
+    txt = txt.replace('13', 'nw')
+    txt = txt.replace('1', 'ne')
     txt = txt.replace('8', 's')
     txt = txt.replace('calm', 'ne') # most common value
+    if 'ne' in txt:
+        return 'ne'
+    if 'sw' in txt:
+        return 'sw'
+    if 'nw' in txt:
+        return 'nw'
+    if 'se' in txt:
+        return 'se'
     return txt
 
 
