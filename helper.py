@@ -12,8 +12,8 @@ def rename_elements(df, df_id):
 
     Parameters
     -----------
-    df: DataFrame used for training
-    df_id: DataFrame for ID purposes
+    df = DataFrame used for training
+    df_id = DataFrame for ID purposes
 
     Returns
     --------
@@ -199,6 +199,17 @@ def replace_null_cols(df):
 
 
 def give_me_WindSpeed(x):
+    '''
+    This function removes 'mph' and turns it into a float.
+
+    Parameter
+    ---------
+    x: int or str, element from list/DataFrame
+
+    Returns
+    -------
+    windspeed as an integer
+    '''
     x = str(x)
     x = x.replace('mph', '').strip()
     if '-' in x:
@@ -210,6 +221,17 @@ def give_me_WindSpeed(x):
 
 
 def strtoseconds(txt):
+    '''
+    This function turns text into seconds.
+
+    Parameter
+    ---------
+    txt: str, element from list/DataFrame
+
+    Returns
+    -------
+    seconds in int format
+    '''
     txt = txt.split(':')
     ans = int(txt[0])*60 + int(txt[1]) + int(txt[2])/60
     return ans
@@ -245,14 +267,31 @@ def organize_team_abbrs(df):
     for abb in df['PossessionTeam'].unique():
         diff_abbr[abb] = abb
 
-    df['PossessionTeam'] = df['PossessionTeam'].map(diff_abbr)
-    df['TeamAbbr'] = df['TeamAbbr'].map(diff_abbr)
-    df['OppTeamAbbr'] = df['OppTeamAbbr'].map(diff_abbr)
+    df['PossessionTeam'] = df['PossessionTeam'].map(lambda x: diff_abbr[x]
+                                                    if x in diff_abbr
+                                                    else x)
+    df['TeamAbbr'] = df['TeamAbbr'].map(lambda x: diff_abbr[x]
+                                        if x in diff_abbr
+                                        else x)
+    df['OppTeamAbbr'] = df['OppTeamAbbr'].map(lambda x: diff_abbr[x]
+                                              if x in diff_abbr
+                                              else x)
 
     return df
 
 
 def clean_WindDirection(txt):
+    '''
+    This function cleans the wind direction column.
+
+    Parameter
+    ---------
+    txt: obj, element of list/DataFrame
+
+    Returns
+    -------
+    text in string format
+    '''
     if pd.isna(txt):
         return np.nan
     txt = txt.lower()
@@ -271,6 +310,18 @@ def clean_WindDirection(txt):
 
 
 def new_orientation(angle, play_direction):
+    '''
+    This function cleans up the orientation column.
+
+    Parameters
+    ----------
+    angle: int, angle
+    play_direction: column with the play direction
+
+    Returns
+    -------
+    new angle in int format
+    '''
     if play_direction == 0:
         new_angle = 360.0 - angle
         if new_angle == 360.0:
@@ -281,6 +332,17 @@ def new_orientation(angle, play_direction):
 
 
 def assign_yard_class(x):
+    '''
+    This function bins the number of yards.
+
+    Parameters
+    ----------
+    x: int, element of list/DataFrame
+
+    Returns
+    -------
+    class of yards (<0, 0-1, 1-3, 3-6, >6)
+    '''
     if x < 0:
         return "< 0"
     elif (x >= 0 and x <= 1):
