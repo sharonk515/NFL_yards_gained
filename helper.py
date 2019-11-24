@@ -267,9 +267,15 @@ def organize_team_abbrs(df):
     for abb in df['PossessionTeam'].unique():
         diff_abbr[abb] = abb
 
-    df['PossessionTeam'] = df['PossessionTeam'].map(diff_abbr)
-    df['TeamAbbr'] = df['TeamAbbr'].map(diff_abbr)
-    df['OppTeamAbbr'] = df['OppTeamAbbr'].map(diff_abbr)
+    df['PossessionTeam'] = df['PossessionTeam'].map(lambda x: diff_abbr[x]
+                                                    if x in diff_abbr
+                                                    else x)
+    df['TeamAbbr'] = df['TeamAbbr'].map(lambda x: diff_abbr[x]
+                                        if x in diff_abbr
+                                        else x)
+    df['OppTeamAbbr'] = df['OppTeamAbbr'].map(lambda x: diff_abbr[x]
+                                              if x in diff_abbr
+                                              else x)
 
     return df
 
