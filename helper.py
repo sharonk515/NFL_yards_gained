@@ -368,15 +368,15 @@ def assign_yard_class(x):
 
     Returns
     -------
-    class of yards (<0, 0-1, 1-3, 3-6, >6)
+    class of yards (<0, 0-1, 2-3, 4-6, >6)
     '''
     if x < 0:
         return "< 0"
     elif (x >= 0 and x <= 1):
         return "0-1"
     elif (x > 1 and x <= 3):
-        return "1-3"
+        return "2-3"
     elif (x > 3 and x <= 6):
-        return "3-6"
+        return "4-6"
     else:
         return "> 6"
