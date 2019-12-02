@@ -2,11 +2,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.metrics import confusion_matrix
 
 
-def two_subplots(df, col1, col2, size, num_type=1, order=None, rotate=None):
+def two_subplots(df, col1, col2, size, num_type=1,
+                 order=None, rotate=None):
     '''
     This function plots two subplots.
 
@@ -78,6 +78,49 @@ def plot_boxplots(df, col_list):
         axes[i//3, i % 3].set_title(f'Distribution of Yards for each {col}');
 
 
+def plot_reg_feat_imp(model, df, top10=None):
+    '''
+    This function plots a horizontal bar graph,
+    displaying the importance of features for specified model.
+
+    Parameters
+    ----------
+    model: model to plot
+    df: DataFrame
+    top10: boolean (default=False), True if plotting Top 10 features
+
+    Returns
+    -------
+    Horizontal bar graph showing the importance of features.
+    '''
+
+    feat_imp = pd.DataFrame([df.columns.values,
+                             model.feature_importances_]
+                           ).T
+    feat_imp.columns = ['features', 'importance']
+    feat_imp.sort_values(by='importance', inplace=True)
+    if top10:
+        plt.figure(figsize=(10, 7))
+        plt.barh(feat_imp['features'][-11:],
+                 feat_imp['importance'][-11:],
+                 align='center')
+        plt.yticks(np.arange(len(feat_imp['features'][-11:])),
+                   feat_imp['features'][-11:])
+        plt.title('Top 10 important features in predicting yards')
+
+    else:
+        plt.figure(figsize=(10, 10))
+        plt.barh(feat_imp['features'],
+                 feat_imp['importance'],
+                 align='center')
+        plt.yticks(np.arange(len(feat_imp['features'])),
+                   feat_imp['features'])
+        plt.title('Feature importance in predicting yards')
+
+    plt.xlabel('Feature importance')
+    plt.ylabel('Feature');
+
+
 def plot_feat_imp(model, df):
     '''
     This function plots a horizontal bar graph,
@@ -93,81 +136,50 @@ def plot_feat_imp(model, df):
     Horizontal bar graph showing the importance of features.
     '''
     plt.figure(figsize=(8, 8))
-    if model == 'SVM':
-        plt.barh(df['Feature'],
-                 df['Absolute Coefficient'],
+    if (model == svm) | (model == log):
+        feat_imp = pd.DataFrame([df.columns.values,
+                                 model.best_estimator_.coef_[0],
+                                 np.abs(model.best_estimator_.coef_[0])],
+                                columns=['features',
+                                         'coefficients',
+                                         'absolute_coefs']
+                               )
+        feat_imp.sort_values(by='absolute_coefs', inplace=True)
+        plt.barh(feat_imp['features'],
+                 feat_imp['absolute_coefs'],
                  align='center')
+        plt.yticks(np.arange(len(feat_imp['features'])),
+                   feat_imp['features'])
         sns.despine(left=False, bottom=False)
-        coefs = df['Coefficient'].apply(lambda x: round(x, 2))
-        plt.xticks(fontsize=14)
-        plt.yticks(fontsize=18)
-        plt.xlabel('Feature importance', fontsize=18)
-        plt.ylabel('Feature', fontsize=18)
-        plt.title(f'Predicting Yards\n', fontsize=18)
-        for i, v in enumerate(coefs):
-            plt.text(np.abs(v) + 0.007, i - 0.1,
-                     str(np.abs(v)),
+        coefs = df['coefficients'].apply(lambda x: round(x, 2))
+        for i, coef in enumerate(coefs):
+            plt.text(np.abs(coef) + 0.007, i - 0.1,
+                     str(np.abs(coef)),
                      color='black',
                      fontsize=18)
             if v > 0:
-                plt.text(v - 0.01, i - 0.1, '+',
+                plt.text(coef - 0.01, i - 0.1, '+',
                          color='black',
                          fontsize=12,
                          fontweight='bold')
             else:
-                plt.text(np.abs(v) - 0.03, i - 0.1, '-',
+                plt.text(np.abs(coef) - 0.03, i - 0.1, '-',
                          color='black',
                          fontsize=18,
                          fontweight='bold')
+
     else:
-        n_features = df.shape[1]
-        plt.barh(range(n_features),
-                 model.best_estimator_.feature_importances_,
-                 align='center')
-        plt.yticks(np.arange(n_features), df.columns.values)
-        plt.xlabel('Feature importance')
-        plt.ylabel('Feature')
-        plt.title(f'Feature importance in predicting yards');
+        feat_imp = pd.DataFrame([df.columns.values,
+                                 model.best_estimator_.feature_importances_],
+                               ).T
+        feat_imp.columns=['features', 'importance']
+        feat_imp.sort_values(by='importance', inplace=True)
+        plt.barh(feat_imp['features'],
+                     feat_imp['importance'],
+                     align='center')
+        plt.yticks(np.arange(len(feat_imp['features'])),
+                       feat_imp['features'])
 
-
-def plot_roc_curve(models, model_names, X_test, y_test, X_test_scale=None):
-    '''
-    This function plots ROC curves for each model specified.
-
-    Parameters
-    ----------
-    models: list of models
-    model_name: list, model names as strings
-    X_test: DataFrame or series, test set of features
-    y_test: DataFrame or series, test set of target values
-    X_test_scale: df (default=None), scaled DataFrame
-                  for models that require scaling
-
-    Returns
-    -------
-    ROC curve of all of the models with their areas under the curve
-    '''
-    plt.figure(figsize=(10, 8))
-    for idx, model in enumerate(models):
-        if (model_names[idx] == 'SVM'):
-            auc_score = roc_auc_score(
-                y_test, model.best_estimator_.predict_proba(X_test_scale)[:, 1])
-            fpr, tpr, thresholds = roc_curve(
-                y_test, model.best_estimator_.predict_proba(X_test_scale)[:, 1])
-        else:
-            auc_score = roc_auc_score(
-                y_test, model.best_estimator_.predict_proba(X_test)[:, 1])
-            fpr, tpr, thresholds = roc_curve(
-                y_test, model.best_estimator_.predict_proba(X_test)[:, 1])
-        # fpr = false positive, #tpr = true positive
-        plt.plot(fpr, tpr,
-                 label=f'{model_names[idx]} (auc = %0.2f)' % auc_score,
-                 lw=2)
-    plt.plot([0, 1], [0, 1], 'k--')
-    plt.plot([0, 0, 1], [0, 1, 1], 'k--', color='red')
-    plt.xlabel('False Positive Rate', fontsize=18)
-    plt.ylabel('True Positive Rate', fontsize=18)
-    plt.title(f'ROC Curves', fontsize=20)
-    plt.xlim(-0.005, 1.005)
-    plt.ylim(-0.005, 1.005)
-    plt.legend(loc='best', fontsize=12, frameon=False);
+    plt.title('Feature importance in predicting yards')
+    plt.xlabel('Feature importance')
+    plt.ylabel('Feature');
