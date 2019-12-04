@@ -78,6 +78,25 @@ def plot_boxplots(df, col_list):
         axes[i//3, i % 3].set_title(f'Distribution of Yards for each {col}');
 
 
+def plot_group_count(df, column):
+    yard_order = ['< 0', '0-1', '2-3', '4-6', '> 6']
+    yard_counts = {}
+    for i in yard_order:
+        yard_counts[i] = dict(df[column].value_counts(sort=False))[i]
+    sns.countplot(df[column],
+                  order=yard_order)
+    for i, v in enumerate(yard_counts.values()):
+        plt.text(i - 0.27, v + 2000,
+                 str(v),
+                 color='black',
+                 fontsize=10)
+    plt.title('Distribution of Yard Groups \n')
+    sns.despine(left=False, bottom=False)
+    plt.savefig('Images/Yard_groups',
+                bbox_inches='tight',
+                transparent=True);
+
+
 def plot_reg_feat_imp(model, df, top10=None):
     '''
     This function plots a horizontal bar graph,
@@ -101,11 +120,11 @@ def plot_reg_feat_imp(model, df, top10=None):
     feat_imp.sort_values(by='importance', inplace=True)
     if top10:
         plt.figure(figsize=(10, 7))
-        plt.barh(feat_imp['features'][-11:],
-                 feat_imp['importance'][-11:],
+        plt.barh(feat_imp['features'][-10:],
+                 feat_imp['importance'][-10:],
                  align='center')
-        plt.yticks(np.arange(len(feat_imp['features'][-11:])),
-                   feat_imp['features'][-11:])
+        plt.yticks(np.arange(len(feat_imp['features'][-10:])),
+                   feat_imp['features'][-10:])
         plt.title('Top 10 important features in predicting yards')
 
     else:
